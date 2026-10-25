@@ -141,6 +141,8 @@ p { margin: 0 0 1em; }
 .gift-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .gift-body h3 { font-size: 1.02rem; margin: 0; font-family: var(--font-body); font-weight: 700; }
 .gift-price { font-weight: 800; color: var(--terra-dark); font-size: 1.1rem; margin: 0; }
+.gift-price s { color: var(--muted); font-weight: 600; margin-right: 6px; }
+.save-badge { display: inline-block; background: #1F7A3A; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
 .gift-desc { font-size: 0.9rem; color: var(--muted); margin: 0; flex: 1; }
 .gift-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .tag {
