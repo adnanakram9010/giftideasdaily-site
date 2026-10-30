@@ -15,7 +15,12 @@
     cart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 4h2l2.4 12.4a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20.5 8H6"/></svg>'
   };
 
-  var state = { step: 0, occasion: null, person: null, budget: null, vibes: [] };
+  // Occasions that already fix the recipient: asking "who is it for?"
+  // after Father's Day / Mother's Day is nonsense (a father is not a kid,
+  // a mother is not a man), so the person step is skipped for them.
+  var OCCASION_PERSON = { "fathers-day": "for-him", "mothers-day": "for-her" };
+
+  var state = { step: 0, occasion: null, person: null, personInferred: false, budget: null, vibes: [] };
 
   var STEPS = [
     {
@@ -56,13 +61,25 @@
       .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
+  function activeSteps() {
+    if (state.personInferred) {
+      return STEPS.filter(function (s) { return s.key !== "person"; });
+    }
+    return STEPS;
+  }
+
   function render() {
-    var step = STEPS[state.step];
-    var pct = Math.round((state.step / STEPS.length) * 100);
+    var steps = activeSteps();
+    var step = steps[state.step];
+    var pct = Math.round((state.step / steps.length) * 100);
     var sel = step.multi ? state[step.key] : [state[step.key]];
     var html = '<div class="quiz-progress"><i style="width:' + pct + '%"></i></div>';
     html += '<div class="quiz-step"><h2>' + esc(step.title) + '</h2>';
     html += '<p class="q-sub">' + esc(step.sub) + '</p>';
+    if (step.key === "budget" && state.personInferred) {
+      html += '<p class="q-sub">Recipient set automatically: ' + esc(DATA.persons[state.person]) +
+        ' for ' + esc(DATA.events[state.occasion]) + '.</p>';
+    }
     html += '<div class="q-options' + (step.cols2 ? " cols2" : "") + '">';
     step.options.forEach(function (opt) {
       var isSel = sel.indexOf(opt.value) !== -1;
@@ -87,9 +104,18 @@
           if (i === -1) arr.push(v); else arr.splice(i, 1);
           render();
         } else {
+          if (step.key === "occasion") {
+            if (OCCASION_PERSON[v]) {
+              state.person = OCCASION_PERSON[v];
+              state.personInferred = true;
+            } else {
+              state.person = null;
+              state.personInferred = false;
+            }
+          }
           state[step.key] = v;
           state.step++;
-          if (state.step >= STEPS.length) showResults();
+          if (state.step >= activeSteps().length) showResults();
           else render();
         }
       });
@@ -161,7 +187,7 @@
     mount.innerHTML = html;
     mount.scrollIntoView({ behavior: "smooth", block: "start" });
     document.getElementById("quiz-restart").addEventListener("click", function () {
-      state = { step: 0, occasion: null, person: null, budget: null, vibes: [] };
+      state = { step: 0, occasion: null, person: null, personInferred: false, budget: null, vibes: [] };
       render();
     });
   }
