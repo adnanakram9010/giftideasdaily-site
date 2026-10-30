@@ -1,0 +1,8 @@
+# Force HTTPS — added 2026-10-30: plain http:// served 200 with no redirect,
+# so visitors arriving on http:// saw the browser "Not Secure" warning.
+# The X-Forwarded-Proto condition prevents a redirect loop if TLS is
+# terminated at a proxy in front of Apache.
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
